@@ -401,7 +401,7 @@ MonoBehaviour:
   lookAngle: 45
   lookDuration: 0.5
   player: {fileID: 594109736}
-  visionDistance: 10
+  visionDistance: 4
   visionAngle: 60
   obstacleMask:
     serializedVersion: 2
@@ -419,7 +419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConoVision
   visionAngle: 60
-  visionDistance: 5
+  visionDistance: 0.4
   segments: 30
   visionMaterial: {fileID: 2100000, guid: b8956e6672d5d7f4594de8828f03dd19, type: 2}
   wallLayerName: Pared
