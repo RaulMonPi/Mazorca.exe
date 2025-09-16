@@ -400,12 +400,12 @@ MonoBehaviour:
   waitTime: 1
   lookAngle: 45
   lookDuration: 0.5
-  player: {fileID: 0}
+  player: {fileID: 594109736}
   visionDistance: 10
   visionAngle: 60
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
 --- !u!114 &498121044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -421,8 +421,8 @@ MonoBehaviour:
   visionAngle: 60
   visionDistance: 5
   segments: 30
-  visionMaterial: {fileID: 0}
-  wallLayerName: Paredes
+  visionMaterial: {fileID: 2100000, guid: b8956e6672d5d7f4594de8828f03dd19, type: 2}
+  wallLayerName: Pared
 --- !u!23 &498121045
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -552,6 +552,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e3e8e33af43da834294d5f9a02da77e7, type: 3}
+--- !u!4 &594109736 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4000012323953278, guid: e3e8e33af43da834294d5f9a02da77e7, type: 3}
+  m_PrefabInstance: {fileID: 594109735}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1289393495
 GameObject:
   m_ObjectHideFlags: 0
@@ -564,7 +569,7 @@ GameObject:
   - component: {fileID: 1289393498}
   - component: {fileID: 1289393497}
   - component: {fileID: 1289393496}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
