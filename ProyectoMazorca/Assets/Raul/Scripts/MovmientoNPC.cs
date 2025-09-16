@@ -7,56 +7,90 @@ public class MovmientoNPC : MonoBehaviour
     public float speed = 1f;
     public float reachDistance = 0.2f;
     public float waitTime = 1f;
-    public float lookAngle = 45f; // Grados a rotar a izquierda y derecha
-    public float lookDuration = 0.5f; // Tiempo para cada rotación
+    public float lookAngle = 45f;
+    public float lookDuration = 0.5f;
+
+    public Transform player; // Asigna el jugador en el inspector
+    public float visionDistance = 10f;
+    public float visionAngle = 60f;
+    public LayerMask obstacleMask; // Asigna las capas de obstáculos
 
     private int currentWaypoint = 0;
     private int direction = 1;
     private bool isWaiting = false;
+    private bool playerInSight = false;
 
-  void Update()
-{
-    if (waypoints.Length == 0 || isWaiting) return;
-
-    Transform target = waypoints[currentWaypoint];
-    Vector3 directionToTarget = (target.position - transform.position).normalized;
-
-    // Rotar suavemente hacia el siguiente waypoint
-    if (directionToTarget != Vector3.zero)
+    void Update()
     {
-        Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f); // 5f es la velocidad de giro
+        // Verifica si el jugador está en el campo de visión y sin obstáculos
+        playerInSight = IsPlayerInSight();
+
+        if (playerInSight)
+        {
+            // Mira al jugador y no se mueve
+            Vector3 dirToPlayer = (player.position - transform.position).normalized;
+            if (dirToPlayer != Vector3.zero)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(dirToPlayer);
+                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+            }
+            return;
+        }
+
+        if (waypoints.Length == 0 || isWaiting) return;
+
+        Transform target = waypoints[currentWaypoint];
+        Vector3 directionToTarget = (target.position - transform.position).normalized;
+
+        // Rotar suavemente hacia el siguiente waypoint
+        if (directionToTarget != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+        }
+
+        transform.position += directionToTarget * speed * Time.deltaTime;
+
+        if (Vector3.Distance(transform.position, target.position) < reachDistance)
+        {
+            StartCoroutine(WaitAndLook());
+        }
     }
 
-    transform.position += directionToTarget * speed * Time.deltaTime;
-
-    if (Vector3.Distance(transform.position, target.position) < reachDistance)
+    bool IsPlayerInSight()
     {
-        StartCoroutine(WaitAndLook());
+        if (player == null) return false;
+
+        Vector3 dirToPlayer = (player.position - transform.position).normalized;
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        // Comprueba ángulo de visión
+        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+        if (angle < visionAngle * 0.5f && distanceToPlayer < visionDistance)
+        {
+            // Raycast para comprobar obstáculos
+            if (!Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToPlayer, distanceToPlayer, obstacleMask))
+            {
+                return true;
+            }
+        }
+        return false;
     }
-}
+
     IEnumerator WaitAndLook()
     {
         isWaiting = true;
-
-        // Espera 1 segundo
         yield return new WaitForSeconds(waitTime);
 
-        // Guarda la rotación original
         Quaternion originalRotation = transform.rotation;
-
-        // Mira a la izquierda
         Quaternion leftRotation = originalRotation * Quaternion.Euler(0, -lookAngle, 0);
         yield return RotateTo(leftRotation, lookDuration);
 
-        // Mira a la derecha
         Quaternion rightRotation = originalRotation * Quaternion.Euler(0, lookAngle, 0);
         yield return RotateTo(rightRotation, lookDuration * 2);
 
-        // Vuelve a la rotación original
         yield return RotateTo(originalRotation, lookDuration);
 
-        // Cambia al siguiente waypoint
         currentWaypoint += direction;
         if (currentWaypoint >= waypoints.Length)
         {
