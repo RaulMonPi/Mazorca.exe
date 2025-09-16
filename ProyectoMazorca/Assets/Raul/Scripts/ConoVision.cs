@@ -52,8 +52,8 @@ public class ConoVision : MonoBehaviour
 
             RaycastHit hit;
             Vector3 vertex;
-            if (Physics.Raycast(transform.position + Vector3.up * 0.5f, worldDir, out hit, visionDistance, wallLayerMask))            {
-                // Si choca con una pared, el vértice es el punto de impacto relativo al NPC
+            if (Physics.Raycast(transform.position, worldDir, out hit, visionDistance, wallLayerMask))                // Si choca con una pared, el vértice es el punto de impacto relativo al NPC
+            {
                 vertex = transform.InverseTransformPoint(hit.point);
             }
             else
