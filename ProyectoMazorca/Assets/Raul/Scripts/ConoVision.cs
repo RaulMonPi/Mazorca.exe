@@ -40,26 +40,29 @@ public class ConoVision : MonoBehaviour
         vertices[0] = Vector3.zero; // Centro del cono
 
         float halfAngle = visionAngle * 0.5f;
+        // Compensar la escala global del objeto
+        float scaleCompensate = transform.lossyScale.x; // Suponiendo escala uniforme
+
         for (int i = 0; i <= segments; i++)
         {
             float angle = -halfAngle + (visionAngle * i / segments);
             float rad = Mathf.Deg2Rad * angle;
 
-            // Dirección local del segmento
             Vector3 localDir = new Vector3(Mathf.Sin(rad), 0, Mathf.Cos(rad));
-            // Dirección global (por si el NPC rota)
             Vector3 worldDir = transform.TransformDirection(localDir);
 
             RaycastHit hit;
             Vector3 vertex;
-            if (Physics.Raycast(transform.position, worldDir, out hit, visionDistance, wallLayerMask))                // Si choca con una pared, el vértice es el punto de impacto relativo al NPC
+            // Compensar la distancia de vision por la escala
+            float compensatedVisionDistance = visionDistance * scaleCompensate;
+
+            if (Physics.Raycast(transform.position, worldDir, out hit, compensatedVisionDistance, wallLayerMask))
             {
                 vertex = transform.InverseTransformPoint(hit.point);
             }
             else
             {
-                // Si no choca, el vértice es el extremo del cono
-                vertex = localDir * visionDistance;
+                vertex = localDir * visionDistance; // ¡OJO! Aquí usamos visionDistance sin escalar
             }
             vertices[i + 1] = vertex;
         }
