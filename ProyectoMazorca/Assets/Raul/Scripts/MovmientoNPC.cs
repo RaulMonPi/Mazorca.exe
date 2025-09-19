@@ -178,7 +178,19 @@ public class MovmientoNPC : MonoBehaviour
             yield return null;
         }
 
-        // Si no ha visto al jugador, vuelve a patrullar
+        // Si no ha visto al jugador, avanza al siguiente waypoint y vuelve a patrullar
+        currentWaypoint += direction;
+        if (currentWaypoint >= waypoints.Length)
+        {
+            direction = -1;
+            currentWaypoint = waypoints.Length - 2;
+        }
+        else if (currentWaypoint < 0)
+        {
+            direction = 1;
+            currentWaypoint = 1;
+        }
+
         CambiarEstado(EstadoNPC.Patrolling);
         isAlertRotating = false;
     }
