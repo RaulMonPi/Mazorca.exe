@@ -46,4 +46,8 @@ public class PlayerMove : MonoBehaviour
             rb.MovePosition(newPosition);
         }
     }
+    public bool IsRunning()
+    {
+        return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    }
 }
