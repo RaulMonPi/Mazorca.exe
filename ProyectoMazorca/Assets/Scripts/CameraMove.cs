@@ -4,13 +4,17 @@ public class CameraMove : MonoBehaviour
 {
     public Transform target; // el Player
     public Vector3 offset;   // distancia desde el Player
+    public float rotationX = 30f; // rotaci√≥n en X
+    public float rotationY = 0f;  // rotaci√≥n en Y
+    public float rotationZ = 0f;  // rotaci√≥n en Z
 
     void LateUpdate()
     {
         if (target != null)
         {
-            // La c·mara sigue la posiciÛn del jugador pero NO rota con Èl
+            // La camara sigue la posicion del jugador pero NO rota con el
             transform.position = target.position + offset;
+            transform.rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
         }
     }
 }

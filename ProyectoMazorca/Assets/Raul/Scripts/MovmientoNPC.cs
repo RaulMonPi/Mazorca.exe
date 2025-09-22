@@ -138,7 +138,7 @@ public class MovmientoNPC : MonoBehaviour
             }
             else
             {
-                // Si ve al jugador al llegar, cambia a persecución directamente
+                // Si ve al jugador al llegar, cambia a persecucion directamente
                 if (IsPlayerInSight())
                 {
                     CambiarEstado(EstadoNPC.Chasing);
@@ -150,7 +150,7 @@ public class MovmientoNPC : MonoBehaviour
                 }
             }
         }
-        // Si está girando, la corrutina se encarga de la lógica
+        // Si está girando, la corrutina se encarga de la logica
     }
 
     IEnumerator AlertRotateAndCheck()
@@ -168,7 +168,7 @@ public class MovmientoNPC : MonoBehaviour
             totalRotation += rotationStep;
             elapsed += Time.deltaTime;
 
-            // Durante la rotación, si ve al jugador, cambia a persecución
+            // Durante la rotacion, si ve al jugador, cambia a persecucion
             if (IsPlayerInSight())
             {
                 CambiarEstado(EstadoNPC.Chasing);
@@ -178,7 +178,19 @@ public class MovmientoNPC : MonoBehaviour
             yield return null;
         }
 
-        // Si no ha visto al jugador, vuelve a patrullar
+        // Si no ha visto al jugador, avanza al siguiente waypoint y vuelve a patrullar
+        currentWaypoint += direction;
+        if (currentWaypoint >= waypoints.Length)
+        {
+            direction = -1;
+            currentWaypoint = waypoints.Length - 2;
+        }
+        else if (currentWaypoint < 0)
+        {
+            direction = 1;
+            currentWaypoint = 1;
+        }
+
         CambiarEstado(EstadoNPC.Patrolling);
         isAlertRotating = false;
     }
@@ -190,11 +202,11 @@ public class MovmientoNPC : MonoBehaviour
         Vector3 dirToPlayer = (player.position - transform.position).normalized;
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        // Comprueba ángulo de visión
+        // Comprueba angulo de vision
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
         if (angle < visionAngle * 0.5f && distanceToPlayer < visionDistance)
         {
-            // Raycast para comprobar obstáculos
+            // Raycast para comprobar obstaculos
             if (!Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToPlayer, distanceToPlayer, obstacleMask))
             {
                 return true;
