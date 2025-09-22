@@ -1248,7 +1248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adb837447528baa48b7f9925508af526, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NoiseArea
-  walkRadius: 5
+  walkRadius: 3
   runRadius: 10
 --- !u!1 &1222584377
 GameObject:
