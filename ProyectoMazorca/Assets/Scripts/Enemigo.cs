@@ -11,7 +11,7 @@ public class Enemigo : MonoBehaviour
             PlayerVida player = collision.gameObject.GetComponent<PlayerVida>();
             if (player != null)
             {
-                Debug.Log("Enemigo ha colisionado con el jugador, infligiendo daño.");
+                //Debug.Log("Enemigo ha colisionado con el jugador, infligiendo daño.");
                 player.RecibirDanio(damage);
             }
         }
