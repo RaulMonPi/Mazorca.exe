@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(CapsuleCollider))]
 public class NoiseArea : MonoBehaviour
 {
-    [Header("Radios de detección")]
+    [Header("Radios de detecciï¿½n")]
     public float walkRadius = 3f;   // Radio cuando camina
     public float runRadius = 6f;    // Radio cuando corre
 
@@ -19,14 +19,14 @@ public class NoiseArea : MonoBehaviour
 
         player = GetComponentInParent<PlayerMove>();
         if (player == null)
-            Debug.LogError("NoiseArea no encontró el script PlayerMovement en el padre.");
+            Debug.LogError("NoiseArea no encontro el script PlayerMovement en el padre.");
     }
 
     void Update()
     {
         if (player == null) return;
 
-        // Cambia radio según el estado (andar/correr)
+        // Cambia radio segï¿½n el estado (andar/correr)
         col.radius = player.IsRunning() ? runRadius : walkRadius;
     }
 
@@ -34,7 +34,7 @@ public class NoiseArea : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            Debug.Log("¡Un enemigo ha escuchado al jugador!");
+            Debug.Log("Un enemigo ha escuchado al jugador!");
         }
     }
 
