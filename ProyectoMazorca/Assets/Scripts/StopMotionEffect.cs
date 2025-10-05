@@ -1,16 +1,20 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Animator))]
 public class StopMotionEffect : MonoBehaviour
 {
     public Animator animator;
     [Range(1, 30)] public int stopMotionFPS = 12;
 
-    private float frameTimer;
     private float frameDuration;
-    private float holdTime;
+    private float accumulatedTime = 0f;
 
     void Start()
     {
+        if (animator == null)
+            animator = GetComponent<Animator>();
+
+        animator.speed = 0f; // Control manual
         frameDuration = 1f / stopMotionFPS;
     }
 
@@ -18,14 +22,12 @@ public class StopMotionEffect : MonoBehaviour
     {
         if (animator == null) return;
 
-        frameTimer += Time.deltaTime;
-        if (frameTimer >= frameDuration)
-        {
-            frameTimer = 0f;
-            holdTime = animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
-        }
+        accumulatedTime += Time.deltaTime;
 
-        animator.Play(animator.GetCurrentAnimatorStateInfo(0).shortNameHash, 0, holdTime);
-        animator.speed = 0f;
+        while (accumulatedTime >= frameDuration)
+        {
+            animator.Update(frameDuration); // Avanza la animación un "frame"
+            accumulatedTime -= frameDuration;
+        }
     }
 }
