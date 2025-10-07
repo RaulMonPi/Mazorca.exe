@@ -80,6 +80,7 @@ MonoBehaviour:
   walkSpeed: 5
   runSpeed: 9
   rotationSpeed: 10
+  animator: {fileID: 1122881375076358265}
 --- !u!114 &8560812751794176410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,6 +95,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVida
   vida: 3
   tiempoInvulnerable: 1
+  duracionHitStop: 0.5
+  animator: {fileID: 1122881375076358265}
 --- !u!95 &1122881375076358265
 Animator:
   serializedVersion: 7

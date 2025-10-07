@@ -4826,6 +4826,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: bd21cd64515c32640a49256a91a295d1, type: 2}
+    - target: {fileID: 5499515485306475754, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 1309631690}
     - target: {fileID: 6308312567410384620, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 20.549545
@@ -4869,6 +4873,10 @@ PrefabInstance:
     - target: {fileID: 8560812751794176410, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
       propertyPath: vida
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8560812751794176410, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
+      propertyPath: duracionHitStop
+      value: 0.25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -10604,6 +10612,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVida
   vida: 3
   tiempoInvulnerable: 1
+  duracionHitStop: 5
+  animator: {fileID: 1309631690}
+--- !u!95 &1309631690 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1122881375076358265, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
+  m_PrefabInstance: {fileID: 604845336}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1311226678 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7200927917085622770, guid: a84a636a35a83fe408bd4b3d8c2b8058, type: 3}
