@@ -112,40 +112,57 @@ public class GridManager : MonoBehaviour
         return grid[x, y];
     }
 
+    //  Añadimos este método que el A* usa:
+    public Node GetClosestWalkableNode(Vector3 worldPosition)
+    {
+        Node node = NodeFromWorldPoint(worldPosition);
+        if (node.walkable)
+            return node;
+
+        foreach (Node neighbour in GetNeighbours(node))
+        {
+            if (neighbour.walkable)
+                return neighbour;
+        }
+        return node;
+    }
+
+    //  GetNeighbours debe ser público
     public List<Node> GetNeighbours(Node node)
     {
         List<Node> neighbours = new List<Node>();
 
-        for (int dx = -1; dx <= 1; dx++)
+        for (int x = -1; x <= 1; x++)
         {
-            for (int dy = -1; dy <= 1; dy++)
+            for (int y = -1; y <= 1; y++)
             {
-                if (dx == 0 && dy == 0) continue;
-                if (!allowDiagonals && Mathf.Abs(dx) + Mathf.Abs(dy) > 1) continue;
+                if (x == 0 && y == 0)
+                    continue;
 
-                int checkX = node.gridX + dx;
-                int checkY = node.gridY + dy;
+                int checkX = node.gridX + x;
+                int checkY = node.gridY + y;
 
                 if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
+                {
                     neighbours.Add(grid[checkX, checkY]);
+                }
             }
         }
 
         return neighbours;
     }
 
-    void OnDrawGizmosSelected()
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
     {
-        if (!drawGizmos || grid == null) return;
-
-        Gizmos.color = Color.white;
-        Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1f, gridWorldSize.y));
-
-        float drawSize = nodeDiameter - 0.05f;
-        foreach (Node n in grid)
+        if (grid != null)
         {
-            Gizmos.color = n.walkable ? Color.white : Color.red;
-            Gizmos.DrawCube(n.worldPosition + Vector3.up * 0.01f, new Vector3(drawSize, 0.02f, drawSize));
+            foreach (Node n in grid)
+            {
+                Gizmos.color = (n.walkable) ? Color.white : Color.red;
+                Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - 0.1f));
+            }
         }
     }
+#endif
 }
