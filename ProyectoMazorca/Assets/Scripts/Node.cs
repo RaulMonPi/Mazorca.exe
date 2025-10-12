@@ -1,7 +1,10 @@
+// EN Node.cs
+
 using UnityEngine;
 using System;
 
-public class Node : IComparable<Node>
+// Modificar: de 'IComparable<Node>' a 'IHeapItem<Node>'
+public class Node : IHeapItem<Node>
 {
     public bool walkable;
     public Vector3 worldPosition;
@@ -9,14 +12,20 @@ public class Node : IComparable<Node>
     public int gridY;
 
     // A* fields
-    public int gCost;
-    public int hCost;
+    public int gCost; // Coste del camino desde el inicio
+    public int hCost; // Coste heurístico hasta el final
     public Node parent;
 
-    // heap index para la implementación del heap
-    public int heapIndex;
-
     public int fCost => gCost + hCost;
+
+    // **CAMPO PARA EL HEAP:**
+    private int _heapIndex;
+    public int HeapIndex 
+    {
+        get { return _heapIndex; }
+        set { _heapIndex = value; }
+    }
+    // ----------------------
 
     public Node(bool walkable, Vector3 worldPosition, int gridX, int gridY)
     {
@@ -26,7 +35,7 @@ public class Node : IComparable<Node>
         this.gridY = gridY;
     }
 
-    // CompareTo para ordenar en el heap: menor fCost => mayor prioridad.
+    // CompareTo para ordenar: menor fCost => mayor prioridad (el heap usa '>' para subir)
     public int CompareTo(Node other)
     {
         int compare = fCost.CompareTo(other.fCost);
@@ -34,8 +43,8 @@ public class Node : IComparable<Node>
         {
             compare = hCost.CompareTo(other.hCost);
         }
-        // invertimos porque el heap que implementaremos usa '>' para subir
-        return -compare;
+        // Invertimos el resultado para que el Heap priorice el menor F-Cost.
+        return -compare; 
     }
 }
 

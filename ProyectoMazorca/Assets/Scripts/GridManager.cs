@@ -9,7 +9,7 @@ public class GridManager : MonoBehaviour
     public Vector2 gridWorldSize = new Vector2(20f, 20f);
 
     [Tooltip("Tamaño de medio nodo (usa el slider o escribe con cuidado)")]
-    [Range(0.1f, 5f)]
+    [Range(0.1f, 5f)] // permite arrastrar con el ratón en el inspector
     public float nodeRadius = 0.5f;
 
     [Tooltip("Permitir diagonales en la búsqueda")]
@@ -25,8 +25,10 @@ public class GridManager : MonoBehaviour
 
     Node[,] grid;
     float nodeDiameter;
-    int gridSizeX, gridSizeY;
+    public int gridSizeX { get; private set; } // Propiedad pública de solo lectura
+    public int gridSizeY { get; private set; } // Propiedad pública de solo lectura
 
+    // Límite de seguridad para evitar cuelgues
     const int MAX_NODES = 100000;
 
     void Awake()
@@ -37,6 +39,8 @@ public class GridManager : MonoBehaviour
         RebuildGrid();
     }
 
+    // 🔹 Cambiamos OnValidate por algo más seguro:
+    //    recalcula solo si el valor es razonable y el juego no está en Play
     void OnValidate()
     {
         nodeRadius = Mathf.Max(0.1f, nodeRadius);
@@ -55,7 +59,8 @@ public class GridManager : MonoBehaviour
         int totalNodes = gridSizeX * gridSizeY;
         if (totalNodes > MAX_NODES)
         {
-            Debug.LogWarning($"⚠️ Grid demasiado grande ({totalNodes} nodos). Reduce gridWorldSize o aumenta nodeRadius.");
+            Debug.LogWarning($"⚠️ Grid demasiado grande ({totalNodes} nodos). " +
+                             $"Reduce gridWorldSize o aumenta nodeRadius.");
             grid = null;
             return;
         }
@@ -73,29 +78,7 @@ public class GridManager : MonoBehaviour
             for (int y = 0; y < gridSizeY; y++)
             {
                 Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
-
-                // Si quieres la Y exacta (terrains/desnivel), raycast desde arriba:
-                RaycastHit hit;
-                Vector3 sampleOrigin = worldPoint + Vector3.up * raycastHeight;
-                if (Physics.Raycast(sampleOrigin, Vector3.down, out hit, raycastHeight * 2f))
-                {
-                    worldPoint.y = hit.point.y;
-                }
-
-                bool walkable;
-                if (useBoxCheck)
-                {
-                    Vector3 halfExtents = Vector3.one * (nodeRadius * 0.9f);
-                    Collider[] hits = Physics.OverlapBox(worldPoint, halfExtents, Quaternion.identity, obstacleMask);
-                    walkable = hits.Length == 0;
-                }
-                else
-                {
-                    float checkRadius = nodeRadius * 0.9f;
-                    Collider[] hits = Physics.OverlapSphere(worldPoint, checkRadius, obstacleMask);
-                    walkable = hits.Length == 0;
-                }
-
+                bool walkable = !Physics.CheckSphere(worldPoint, nodeRadius * 0.9f, obstacleMask);
                 grid[x, y] = new Node(walkable, worldPoint, x, y);
             }
         }
@@ -112,57 +95,40 @@ public class GridManager : MonoBehaviour
         return grid[x, y];
     }
 
-    //  Añadimos este método que el A* usa:
-    public Node GetClosestWalkableNode(Vector3 worldPosition)
-    {
-        Node node = NodeFromWorldPoint(worldPosition);
-        if (node.walkable)
-            return node;
-
-        foreach (Node neighbour in GetNeighbours(node))
-        {
-            if (neighbour.walkable)
-                return neighbour;
-        }
-        return node;
-    }
-
-    //  GetNeighbours debe ser público
     public List<Node> GetNeighbours(Node node)
     {
         List<Node> neighbours = new List<Node>();
 
-        for (int x = -1; x <= 1; x++)
+        for (int dx = -1; dx <= 1; dx++)
         {
-            for (int y = -1; y <= 1; y++)
+            for (int dy = -1; dy <= 1; dy++)
             {
-                if (x == 0 && y == 0)
-                    continue;
+                if (dx == 0 && dy == 0) continue;
+                if (!allowDiagonals && Mathf.Abs(dx) + Mathf.Abs(dy) > 1) continue;
 
-                int checkX = node.gridX + x;
-                int checkY = node.gridY + y;
+                int checkX = node.gridX + dx;
+                int checkY = node.gridY + dy;
 
                 if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
-                {
                     neighbours.Add(grid[checkX, checkY]);
-                }
             }
         }
 
         return neighbours;
     }
 
-#if UNITY_EDITOR
-    private void OnDrawGizmos()
+    void OnDrawGizmosSelected()
     {
-        if (grid != null)
+        if (!drawGizmos || grid == null) return;
+
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1f, gridWorldSize.y));
+
+        float drawSize = nodeDiameter - 0.05f;
+        foreach (Node n in grid)
         {
-            foreach (Node n in grid)
-            {
-                Gizmos.color = (n.walkable) ? Color.white : Color.red;
-                Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - 0.1f));
-            }
+            Gizmos.color = n.walkable ? Color.white : Color.red;
+            Gizmos.DrawCube(n.worldPosition + Vector3.up * 0.01f, new Vector3(drawSize, 0.02f, drawSize));
         }
     }
-#endif
 }

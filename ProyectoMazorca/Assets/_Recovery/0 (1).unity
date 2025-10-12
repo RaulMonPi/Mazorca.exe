@@ -20573,16 +20573,8 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
-      propertyPath: player
-      value: 
-      objectReference: {fileID: 1309631686}
-    - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: pathUpdateRate
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
-      propertyPath: chaseStopDistance
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: 'waypoints.Array.data[0]'
