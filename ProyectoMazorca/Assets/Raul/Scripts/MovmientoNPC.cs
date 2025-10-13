@@ -5,24 +5,24 @@ using System.Collections.Generic;
 public class MovmientoNPC : MonoBehaviour
 {
     public Transform[] waypoints;
-    public float patrolSpeed = 1f;      
-    public float chaseSpeed = 2f;       
-    public float alertSpeed = 1.2f;     
-    public float reachDistance = 0.2f; // <-- RECOMENDACIÓN: Prueba con 0.3f o 0.4f si se sigue atascando en paredes.
+    public float patrolSpeed = 1f;
+    public float chaseSpeed = 2f;
+    public float alertSpeed = 1.2f;
+    public float reachDistance = 0.3f;
     public float waitTime = 1f;
     public float lookAngle = 45f;
     public float lookDuration = 0.5f;
 
-    public Transform player; 
+    public Transform player;
     public float visionDistance = 10f;
     public float visionAngle = 60f;
-    public LayerMask obstacleMask; 
+    public LayerMask obstacleMask;
 
-    public float chaseStopDistance = 1.5f; 
-    public float alertRotationTime = 2f;   
+    public float chaseStopDistance = 1.5f;
+    public float alertRotationTime = 2f;
 
     [Header("A* Pathfinding")]
-    public float pathUpdateRate = 0.5f; 
+    public float pathUpdateRate = 0.5f;
 
     private Pathfinding pathfinder;
     private Vector3[] currentPath;
@@ -58,17 +58,19 @@ public class MovmientoNPC : MonoBehaviour
                 if (playerInSight) CambiarEstado(EstadoNPC.Chasing);
                 else PatrollingUpdate();
                 break;
+
             case EstadoNPC.Alert:
                 if (playerInSight) CambiarEstado(EstadoNPC.Chasing);
                 else AlertUpdate();
                 break;
+
             case EstadoNPC.Chasing:
                 if (!playerInSight) CambiarEstado(EstadoNPC.Patrolling);
                 else ChasingUpdate();
                 break;
         }
 
-        if (estadoActual == EstadoNPC.Chasing || estadoActual == EstadoNPC.Alert)
+        if (estadoActual == EstadoNPC.Chasing || estadoActual == EstadoNPC.Alert || estadoActual == EstadoNPC.Patrolling)
         {
             FollowPathUpdate();
         }
@@ -80,33 +82,33 @@ public class MovmientoNPC : MonoBehaviour
         {
             estadoActual = nuevoEstado;
             Debug.Log("NPC Estado: " + estadoActual);
-
-            isFollowingPath = false; 
+            isFollowingPath = false;
+            StopAllCoroutines();
 
             if (estadoActual == EstadoNPC.Alert)
-            {
                 isAlertRotating = false;
-                StopAllCoroutines(); 
-            }
         }
     }
 
+    // ---------------- PATROL ----------------
     void PatrollingUpdate()
     {
-        // <-- CORRECCIÓN: Verifica si hay waypoints antes de intentar acceder a ellos.
-        if (waypoints.Length == 0) return; 
-        if (isWaiting) return;
+        if (waypoints.Length == 0 || isWaiting) return;
 
         Transform target = waypoints[currentWaypoint];
-        Vector3 directionToTarget = (target.position - transform.position).normalized;
 
-        if (directionToTarget != Vector3.zero)
+        // 🔧 Ahora patrullamos usando pathfinding también
+        if (!isFollowingPath && Time.time >= nextPathUpdateTime)
         {
-            Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+            nextPathUpdateTime = Time.time + pathUpdateRate;
+            pathfinder.StartFindPath(transform.position, target.position, OnPathFound);
         }
 
-        transform.position += directionToTarget * patrolSpeed * Time.deltaTime;
+        if (!isFollowingPath)
+        {
+            Vector3 directionToTarget = (target.position - transform.position).normalized;
+            transform.position += directionToTarget * patrolSpeed * Time.deltaTime;
+        }
 
         if (Vector3.Distance(transform.position, target.position) < reachDistance)
         {
@@ -114,6 +116,7 @@ public class MovmientoNPC : MonoBehaviour
         }
     }
 
+    // ---------------- CHASE ----------------
     void ChasingUpdate()
     {
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
@@ -136,6 +139,7 @@ public class MovmientoNPC : MonoBehaviour
         }
     }
 
+    // ---------------- ALERT ----------------
     void AlertUpdate()
     {
         if (isAlertRotating) return;
@@ -150,20 +154,21 @@ public class MovmientoNPC : MonoBehaviour
         else if (distance <= reachDistance)
         {
             isFollowingPath = false;
+
             if (IsPlayerInSight())
             {
                 CambiarEstado(EstadoNPC.Chasing);
             }
             else if (!isAlertRotating)
             {
-                 StartCoroutine(AlertRotateAndCheck()); 
+                StartCoroutine(AlertRotateAndCheck());
             }
         }
     }
 
     public void OnPathFound(Vector3[] newPath, bool pathSuccessful)
     {
-        if (pathSuccessful)
+        if (pathSuccessful && newPath.Length > 0)
         {
             currentPath = newPath;
             currentPathIndex = 0;
@@ -171,7 +176,6 @@ public class MovmientoNPC : MonoBehaviour
         }
         else
         {
-            // <-- CORRECCIÓN: Si el path falla, aseguramos que la ruta se anule.
             isFollowingPath = false;
             currentPath = null;
         }
@@ -180,40 +184,39 @@ public class MovmientoNPC : MonoBehaviour
     void FollowPathUpdate()
     {
         if (!isFollowingPath || currentPath == null) return;
-        
-        // <-- CORRECCIÓN: Salir si el índice ya está fuera de rango para prevenir el error.
-        if (currentPathIndex >= currentPath.Length)
+
+        if (currentPathIndex < 0 || currentPathIndex >= currentPath.Length)
         {
             isFollowingPath = false;
-            return; 
+            return;
         }
 
         Vector3 targetWaypoint = currentPath[currentPathIndex];
         targetWaypoint.y = transform.position.y;
 
-        Vector3 directionToTarget = (targetWaypoint - transform.position).normalized;
-        float speed = (estadoActual == EstadoNPC.Chasing) ? chaseSpeed : alertSpeed;
+        float speed = (estadoActual == EstadoNPC.Chasing) ? chaseSpeed :
+                      (estadoActual == EstadoNPC.Alert) ? alertSpeed : patrolSpeed;
 
-        if (estadoActual != EstadoNPC.Chasing && directionToTarget != Vector3.zero)
+        Vector3 direction = (targetWaypoint - transform.position).normalized;
+
+        // Siempre mirar en la dirección de movimiento (excepto si el vector es cero)
+        if (direction != Vector3.zero)
         {
-            Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
         }
 
-        transform.position += directionToTarget * speed * Time.deltaTime;
+        transform.position += direction * speed * Time.deltaTime;
 
         if (Vector3.Distance(transform.position, targetWaypoint) < reachDistance)
         {
             currentPathIndex++;
-            // Verificamos de nuevo si terminamos la ruta
             if (currentPathIndex >= currentPath.Length)
-            {
                 isFollowingPath = false;
-            }
         }
     }
 
-    // Método que gira al NPC al llegar a la posición de alerta
+    // ---------------- ALERT ROTATION ----------------
     IEnumerator AlertRotateAndCheck()
     {
         isAlertRotating = true;
@@ -234,67 +237,30 @@ public class MovmientoNPC : MonoBehaviour
             yield return null;
         }
 
-        // <-- CORRECCIÓN: Lógica de límites robusta para evitar IndexOutOfRangeException
-        if (waypoints.Length > 0)
+        // ✅ Índices protegidos: evita el IndexOutOfRange
+        if (waypoints.Length > 1)
         {
             currentWaypoint += direction;
+
             if (currentWaypoint >= waypoints.Length)
             {
                 direction = -1;
                 currentWaypoint = waypoints.Length - 2;
-                if (currentWaypoint < 0) currentWaypoint = 0; // Seguridad
             }
             else if (currentWaypoint < 0)
             {
                 direction = 1;
                 currentWaypoint = 1;
-                if (currentWaypoint >= waypoints.Length) currentWaypoint = 0; // Seguridad
             }
-        }
-        else
-        {
-            currentWaypoint = 0; // Si no hay waypoints, nos quedamos en 0
+
+            currentWaypoint = Mathf.Clamp(currentWaypoint, 0, waypoints.Length - 1);
         }
 
         CambiarEstado(EstadoNPC.Patrolling);
         isAlertRotating = false;
     }
 
-
-    private void OnDrawGizmosSelected()
-    {
-        if (currentPath != null)
-        {
-            Gizmos.color = Color.blue;
-            for (int i = currentPathIndex; i < currentPath.Length; i++)
-            {
-                Gizmos.DrawSphere(currentPath[i] + Vector3.up * 0.1f, 0.2f);
-                if (i > currentPathIndex)
-                {
-                    Gizmos.DrawLine(currentPath[i - 1], currentPath[i]);
-                }
-            }
-        }
-    }
-
-    bool IsPlayerInSight()
-    {
-        if (player == null) return false;
-
-        Vector3 dirToPlayer = (player.position - transform.position).normalized;
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-
-        float angle = Vector3.Angle(transform.forward, dirToPlayer);
-        if (angle < visionAngle * 0.5f && distanceToPlayer < visionDistance)
-        {
-            if (!Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToPlayer, distanceToPlayer, obstacleMask))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    // ---------------- WAIT AND LOOK ----------------
     IEnumerator WaitAndLook()
     {
         isWaiting = true;
@@ -309,26 +275,23 @@ public class MovmientoNPC : MonoBehaviour
 
         yield return RotateTo(originalRotation, lookDuration);
 
-        // <-- CORRECCIÓN: Lógica de límites robusta para Patrolling
-        if (waypoints.Length > 0)
+        // ✅ Protección ante índices fuera de rango
+        if (waypoints.Length > 1)
         {
             currentWaypoint += direction;
+
             if (currentWaypoint >= waypoints.Length)
             {
                 direction = -1;
                 currentWaypoint = waypoints.Length - 2;
-                if (currentWaypoint < 0) currentWaypoint = 0; // Seguridad
             }
             else if (currentWaypoint < 0)
             {
                 direction = 1;
                 currentWaypoint = 1;
-                if (currentWaypoint >= waypoints.Length) currentWaypoint = 0; // Seguridad
             }
-        }
-        else
-        {
-            currentWaypoint = 0;
+
+            currentWaypoint = Mathf.Clamp(currentWaypoint, 0, waypoints.Length - 1);
         }
 
         isWaiting = false;
@@ -347,14 +310,42 @@ public class MovmientoNPC : MonoBehaviour
         transform.rotation = targetRotation;
     }
 
+    bool IsPlayerInSight()
+    {
+        if (player == null) return false;
+
+        Vector3 dirToPlayer = (player.position - transform.position).normalized;
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+        if (angle < visionAngle * 0.5f && distanceToPlayer < visionDistance)
+        {
+            if (!Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToPlayer, distanceToPlayer, obstacleMask))
+                return true;
+        }
+        return false;
+    }
+
     private void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Sound"))
         {
             alertPosition = other.transform.position;
-            if (estadoActual != EstadoNPC.Chasing) 
-            {
+            if (estadoActual != EstadoNPC.Chasing)
                 CambiarEstado(EstadoNPC.Alert);
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (currentPath != null)
+        {
+            Gizmos.color = Color.cyan;
+            for (int i = currentPathIndex; i < currentPath.Length; i++)
+            {
+                Gizmos.DrawSphere(currentPath[i] + Vector3.up * 0.1f, 0.2f);
+                if (i > currentPathIndex)
+                    Gizmos.DrawLine(currentPath[i - 1], currentPath[i]);
             }
         }
     }

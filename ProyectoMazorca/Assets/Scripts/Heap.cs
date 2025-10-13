@@ -1,4 +1,4 @@
-// Heap.cs (Modificado)
+// Heap.cs
 using System;
 using System.Collections.Generic;
 using UnityEngine; // Incluir si necesitas alguna clase de Unity, aunque para esta clase no es estrictamente necesario.
