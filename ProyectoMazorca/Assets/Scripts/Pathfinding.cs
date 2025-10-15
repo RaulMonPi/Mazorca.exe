@@ -21,6 +21,13 @@ public class Pathfinding : MonoBehaviour
         Node startNode = GridManager.Instance.NodeFromWorldPoint(startWorld);
         Node targetNode = GridManager.Instance.NodeFromWorldPoint(targetWorld);
 
+        // Añade esto:
+        if (startNode == targetNode)
+        {
+            callback(new Vector3[] { startNode.worldPosition }, true);
+            yield break;
+        }
+
         if (startNode.walkable && targetNode.walkable)
         {
             Heap<Node> openSet = new Heap<Node>(GridManager.Instance.gridSizeX * GridManager.Instance.gridSizeY);

@@ -8,7 +8,7 @@ public class MovmientoNPC : MonoBehaviour
     public float patrolSpeed = 1f;
     public float chaseSpeed = 2f;
     public float alertSpeed = 1.2f;
-    public float reachDistance = 0.3f;
+    public float reachDistance = 1.5f;
     public float waitTime = 1f;
     public float lookAngle = 45f;
     public float lookDuration = 0.5f;
@@ -33,61 +33,47 @@ public class MovmientoNPC : MonoBehaviour
     private int currentWaypoint = 0;
     private int direction = 1;
     private bool isWaiting = false;
-    private bool playerInSight = false;
-
-    private enum EstadoNPC { Patrolling, Alert, Chasing }
-    private EstadoNPC estadoActual = EstadoNPC.Patrolling;
 
     private Vector3 alertPosition;
     private bool isAlertRotating = false;
+
+    private DecisionTreeNode decisionTreeRoot;
+    private bool heardSound = false;
+
+    private int savedWaypointIndex = -1;
 
     void Start()
     {
         pathfinder = GetComponent<Pathfinding>();
         if (pathfinder == null) pathfinder = gameObject.AddComponent<Pathfinding>();
         nextPathUpdateTime = Time.time;
+
+        // Construye el árbol de decisión
+        decisionTreeRoot =
+            new DecisionConditionNode(
+                npc => npc.IsPlayerInSight(),
+                new DecisionActionNode(npc => {
+                    //Debug.Log("NPC: Persiguiendo jugador");
+                    npc.ChasingUpdate();
+                }),
+                new DecisionConditionNode(
+                    npc => npc.HasHeardSound(),
+                    new DecisionActionNode(npc => {
+                        //Debug.Log("NPC: Investigando sonido");
+                        npc.AlertUpdate();
+                    }),
+                    new DecisionActionNode(npc => {
+                        //Debug.Log("NPC: Patrullando");
+                        npc.PatrollingUpdate();
+                    })
+                )
+            );
     }
 
     void Update()
     {
-        playerInSight = IsPlayerInSight();
-
-        switch (estadoActual)
-        {
-            case EstadoNPC.Patrolling:
-                if (playerInSight) CambiarEstado(EstadoNPC.Chasing);
-                else PatrollingUpdate();
-                break;
-
-            case EstadoNPC.Alert:
-                if (playerInSight) CambiarEstado(EstadoNPC.Chasing);
-                else AlertUpdate();
-                break;
-
-            case EstadoNPC.Chasing:
-                if (!playerInSight) CambiarEstado(EstadoNPC.Patrolling);
-                else ChasingUpdate();
-                break;
-        }
-
-        if (estadoActual == EstadoNPC.Chasing || estadoActual == EstadoNPC.Alert || estadoActual == EstadoNPC.Patrolling)
-        {
-            FollowPathUpdate();
-        }
-    }
-
-    void CambiarEstado(EstadoNPC nuevoEstado)
-    {
-        if (estadoActual != nuevoEstado)
-        {
-            estadoActual = nuevoEstado;
-            Debug.Log("NPC Estado: " + estadoActual);
-            isFollowingPath = false;
-            StopAllCoroutines();
-
-            if (estadoActual == EstadoNPC.Alert)
-                isAlertRotating = false;
-        }
+        decisionTreeRoot.Evaluate(this);
+        FollowPathUpdate();
     }
 
     // ---------------- PATROL ----------------
@@ -97,7 +83,6 @@ public class MovmientoNPC : MonoBehaviour
 
         Transform target = waypoints[currentWaypoint];
 
-        // 🔧 Ahora patrullamos usando pathfinding también
         if (!isFollowingPath && Time.time >= nextPathUpdateTime)
         {
             nextPathUpdateTime = Time.time + pathUpdateRate;
@@ -145,24 +130,63 @@ public class MovmientoNPC : MonoBehaviour
         if (isAlertRotating) return;
 
         float distance = Vector3.Distance(transform.position, alertPosition);
-
-        if (distance > reachDistance && Time.time >= nextPathUpdateTime)
-        {
-            nextPathUpdateTime = Time.time + pathUpdateRate;
-            pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
-        }
-        else if (distance <= reachDistance)
+        Debug.Log(distance + " - " + reachDistance);
+        // Si ya estoy en el destino, no busco ruta
+        if (distance <= reachDistance)
         {
             isFollowingPath = false;
 
             if (IsPlayerInSight())
             {
-                CambiarEstado(EstadoNPC.Chasing);
+                // El árbol de decisión se encargará de cambiar a persecución
             }
             else if (!isAlertRotating)
             {
                 StartCoroutine(AlertRotateAndCheck());
             }
+            return;
+        }
+
+        if (Time.time >= nextPathUpdateTime)
+        {
+            nextPathUpdateTime = Time.time + pathUpdateRate;
+            pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
+        }
+    }
+
+    IEnumerator AlertRotateAndCheck()
+    {
+        isAlertRotating = true;
+        float elapsed = 0f;
+
+        while (elapsed < alertRotationTime)
+        {
+            float rotationStep = 360f * (Time.deltaTime / alertRotationTime);
+            transform.Rotate(0, rotationStep, 0);
+            elapsed += Time.deltaTime;
+
+            if (IsPlayerInSight())
+            {
+                isAlertRotating = false;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        // Al terminar la rotación, vuelve a patrullar desde el waypoint guardado
+        if (savedWaypointIndex != -1)
+        {
+            currentWaypoint = savedWaypointIndex;
+            savedWaypointIndex = -1;
+        }
+        heardSound = false;
+        isAlertRotating = false;
+
+        // Pide un nuevo path hacia el waypoint actual para retomar la patrulla
+        if (waypoints.Length > 0)
+        {
+            pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
         }
     }
 
@@ -194,12 +218,15 @@ public class MovmientoNPC : MonoBehaviour
         Vector3 targetWaypoint = currentPath[currentPathIndex];
         targetWaypoint.y = transform.position.y;
 
-        float speed = (estadoActual == EstadoNPC.Chasing) ? chaseSpeed :
-                      (estadoActual == EstadoNPC.Alert) ? alertSpeed : patrolSpeed;
+        // Decide velocidad según contexto
+        float speed = patrolSpeed;
+        if (IsPlayerInSight())
+            speed = chaseSpeed;
+        else if (heardSound)
+            speed = alertSpeed;
 
         Vector3 direction = (targetWaypoint - transform.position).normalized;
 
-        // Siempre mirar en la dirección de movimiento (excepto si el vector es cero)
         if (direction != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(direction);
@@ -214,50 +241,6 @@ public class MovmientoNPC : MonoBehaviour
             if (currentPathIndex >= currentPath.Length)
                 isFollowingPath = false;
         }
-    }
-
-    // ---------------- ALERT ROTATION ----------------
-    IEnumerator AlertRotateAndCheck()
-    {
-        isAlertRotating = true;
-        float elapsed = 0f;
-
-        while (elapsed < alertRotationTime)
-        {
-            float rotationStep = 360f * (Time.deltaTime / alertRotationTime);
-            transform.Rotate(0, rotationStep, 0);
-            elapsed += Time.deltaTime;
-
-            if (IsPlayerInSight())
-            {
-                CambiarEstado(EstadoNPC.Chasing);
-                yield break;
-            }
-
-            yield return null;
-        }
-
-        // ✅ Índices protegidos: evita el IndexOutOfRange
-        if (waypoints.Length > 1)
-        {
-            currentWaypoint += direction;
-
-            if (currentWaypoint >= waypoints.Length)
-            {
-                direction = -1;
-                currentWaypoint = waypoints.Length - 2;
-            }
-            else if (currentWaypoint < 0)
-            {
-                direction = 1;
-                currentWaypoint = 1;
-            }
-
-            currentWaypoint = Mathf.Clamp(currentWaypoint, 0, waypoints.Length - 1);
-        }
-
-        CambiarEstado(EstadoNPC.Patrolling);
-        isAlertRotating = false;
     }
 
     // ---------------- WAIT AND LOOK ----------------
@@ -275,7 +258,6 @@ public class MovmientoNPC : MonoBehaviour
 
         yield return RotateTo(originalRotation, lookDuration);
 
-        // ✅ Protección ante índices fuera de rango
         if (waypoints.Length > 1)
         {
             currentWaypoint += direction;
@@ -331,9 +313,14 @@ public class MovmientoNPC : MonoBehaviour
         if (other.CompareTag("Sound"))
         {
             alertPosition = other.transform.position;
-            if (estadoActual != EstadoNPC.Chasing)
-                CambiarEstado(EstadoNPC.Alert);
+            heardSound = true;
+            savedWaypointIndex = currentWaypoint; // Guarda el waypoint actual
         }
+    }
+
+    public bool HasHeardSound()
+    {
+        return heardSound;
     }
 
     private void OnDrawGizmosSelected()
