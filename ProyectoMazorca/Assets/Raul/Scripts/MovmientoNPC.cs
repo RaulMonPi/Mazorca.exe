@@ -45,6 +45,7 @@ public class MovmientoNPC : MonoBehaviour
     public EnemyGroupManager groupManager;
 
     private bool hasAlertedGroup = false; // Elimina lastAlertTime
+    private bool isLockedOnAlertPath = false;
 
     void Start()
     {
@@ -228,10 +229,14 @@ public class MovmientoNPC : MonoBehaviour
 
     void FollowPathUpdate()
     {
-        if (!isFollowingPath || currentPath == null)
+        if (!isFollowingPath || currentPath == null) return;
+
+        if (currentPathIndex < 0 || currentPathIndex >= currentPath.Length)
         {
+            isFollowingPath = false;
+
             // --- NUEVO BLOQUE: Si estaba investigando (alerta), vuelve a patrullar ---
-            if (heardSound && !IsPlayerInSight())
+            if (heardSound)
             {
                 heardSound = false;
                 isAlertRotating = false;
@@ -251,32 +256,7 @@ public class MovmientoNPC : MonoBehaviour
                 }
             }
             // ------------------------------------------------------------------------
-            return;
-        }
 
-        if (currentPathIndex < 0 || currentPathIndex >= currentPath.Length)
-        {
-            isFollowingPath = false;
-
-            // --- BLOQUE DE ALERTA YA EXISTENTE ---
-            if (heardSound)
-            {
-                heardSound = false;
-                isAlertRotating = false;
-
-                if (savedWaypointIndex != -1)
-                {
-                    currentWaypoint = savedWaypointIndex;
-                    savedWaypointIndex = -1;
-                }
-
-                if (waypoints.Length > 0 && pathfinder != null)
-                {
-                    nextPathUpdateTime = Time.time + pathUpdateRate;
-                    pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
-                }
-            }
-            // -------------------------------------
             return;
         }
 
@@ -407,7 +387,8 @@ public class MovmientoNPC : MonoBehaviour
         isAlertRotating = false;
         isWaiting = false;
         isFollowingPath = false;
-        hasAlertedGroup = false; // Permite que este NPC pueda alertar si ve al jugador después
+        hasAlertedGroup = false;
+        isLockedOnAlertPath = true; // <--- NUEVO
         nextPathUpdateTime = Time.time + pathUpdateRate;
         pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
     }
