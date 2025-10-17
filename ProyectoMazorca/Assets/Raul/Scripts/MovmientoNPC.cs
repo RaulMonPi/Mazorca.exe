@@ -228,14 +228,10 @@ public class MovmientoNPC : MonoBehaviour
 
     void FollowPathUpdate()
     {
-        if (!isFollowingPath || currentPath == null) return;
-
-        if (currentPathIndex < 0 || currentPathIndex >= currentPath.Length)
+        if (!isFollowingPath || currentPath == null)
         {
-            isFollowingPath = false;
-
             // --- NUEVO BLOQUE: Si estaba investigando (alerta), vuelve a patrullar ---
-            if (heardSound)
+            if (heardSound && !IsPlayerInSight())
             {
                 heardSound = false;
                 isAlertRotating = false;
@@ -255,7 +251,32 @@ public class MovmientoNPC : MonoBehaviour
                 }
             }
             // ------------------------------------------------------------------------
+            return;
+        }
 
+        if (currentPathIndex < 0 || currentPathIndex >= currentPath.Length)
+        {
+            isFollowingPath = false;
+
+            // --- BLOQUE DE ALERTA YA EXISTENTE ---
+            if (heardSound)
+            {
+                heardSound = false;
+                isAlertRotating = false;
+
+                if (savedWaypointIndex != -1)
+                {
+                    currentWaypoint = savedWaypointIndex;
+                    savedWaypointIndex = -1;
+                }
+
+                if (waypoints.Length > 0 && pathfinder != null)
+                {
+                    nextPathUpdateTime = Time.time + pathUpdateRate;
+                    pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
+                }
+            }
+            // -------------------------------------
             return;
         }
 
