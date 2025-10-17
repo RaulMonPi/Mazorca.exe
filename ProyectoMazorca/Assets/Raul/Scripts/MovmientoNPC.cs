@@ -42,6 +42,8 @@ public class MovmientoNPC : MonoBehaviour
 
     private int savedWaypointIndex = -1;
 
+    public EnemyGroupManager groupManager;
+
     void Start()
     {
         pathfinder = GetComponent<Pathfinding>();
@@ -111,6 +113,12 @@ public class MovmientoNPC : MonoBehaviour
         {
             Quaternion lookRotation = Quaternion.LookRotation(dirToPlayer);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+        }
+
+        // ALERTA AL GRUPO
+        if (groupManager != null)
+        {
+            groupManager.AlertGroup(player.position, this);
         }
 
         if (distanceToPlayer > chaseStopDistance && Time.time >= nextPathUpdateTime)
@@ -293,7 +301,6 @@ public class MovmientoNPC : MonoBehaviour
             Vector3 targetPos = waypoints[currentWaypoint].position;
             Vector3 flatDir = targetPos - transform.position;
             flatDir.y = 0f;
-            // Elimina steering, solo orienta instantáneamente si quieres:
             if (flatDir.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(flatDir.normalized);
 
@@ -344,6 +351,21 @@ public class MovmientoNPC : MonoBehaviour
             heardSound = true;
             savedWaypointIndex = currentWaypoint; // Guarda el waypoint actual
         }
+    }
+
+    public void ReceiveAlert(Vector3 position)
+    {
+        alertPosition = position;
+        heardSound = true;
+        savedWaypointIndex = currentWaypoint;
+
+        // Opcional: si quieres que el NPC interrumpa lo que está haciendo y vaya inmediatamente
+        isAlertRotating = false;
+        isWaiting = false;
+        isFollowingPath = false;
+        // Pide el path hacia la posición de alerta
+        nextPathUpdateTime = Time.time + pathUpdateRate;
+        pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
     }
 
     public bool HasHeardSound()
