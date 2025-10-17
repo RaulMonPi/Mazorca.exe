@@ -21165,6 +21165,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
+      propertyPath: groupManager
+      value: 
+      objectReference: {fileID: 835414901}
+    - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
       value: 1.5
       objectReference: {fileID: 0}
@@ -23133,6 +23137,10 @@ PrefabInstance:
       propertyPath: patrolSpeed
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
+      propertyPath: groupManager
+      value: 
+      objectReference: {fileID: 835414901}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
       value: 1.5

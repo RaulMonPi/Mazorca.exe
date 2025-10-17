@@ -11,6 +11,7 @@ public class EnemyGroupManager : MonoBehaviour
         {
             if (npc != null && npc != caller)
             {
+                Debug.Log("script alerta al grupo");
                 npc.ReceiveAlert(playerPosition); // Activa heardSound y le pasa la ubicación
             }
         }
