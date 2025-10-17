@@ -44,8 +44,7 @@ public class MovmientoNPC : MonoBehaviour
 
     public EnemyGroupManager groupManager;
 
-    private float lastAlertTime = -10f; // Añade esto
-    private bool hasAlertedGroup = false;
+    private bool hasAlertedGroup = false; // Elimina lastAlertTime
 
     void Start()
     {
@@ -118,11 +117,10 @@ public class MovmientoNPC : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
         }
 
-        // ALERTA AL GRUPO cada 2 segundos como máximo
-        if (groupManager != null && Time.time - lastAlertTime > 2f && !hasAlertedGroup)
+        // ALERTA AL GRUPO solo una vez
+        if (groupManager != null && !hasAlertedGroup)
         {
             groupManager.AlertGroup(player.position, this);
-            lastAlertTime = Time.time;
             hasAlertedGroup = true;
         }
 
