@@ -45,7 +45,7 @@ public class MovmientoNPC : MonoBehaviour
     public EnemyGroupManager groupManager;
 
     private bool hasAlertedGroup = false; // Elimina lastAlertTime
-    private bool mustFinishAlertPath = false;
+    private bool isLockedOnAlertPath = false;
 
     void Start()
     {
@@ -56,7 +56,7 @@ public class MovmientoNPC : MonoBehaviour
         // Construye el árbol de decisión
         decisionTreeRoot =
             new DecisionConditionNode(
-                npc => npc.mustFinishAlertPath,
+                npc => npc.isLockedOnAlertPath,
                 new DecisionActionNode(npc => npc.AlertUpdate()), // Solo hace alerta hasta terminar el path
                 new DecisionConditionNode(
                     npc => npc.IsPlayerInSight(),
@@ -232,11 +232,11 @@ public class MovmientoNPC : MonoBehaviour
             isFollowingPath = false;
 
             // Si estaba investigando (alerta), vuelve a patrullar
-            if (heardSound || mustFinishAlertPath)
+            if (heardSound)
             {
                 heardSound = false;
                 isAlertRotating = false;
-                mustFinishAlertPath = false; // <--- NUEVO
+                isLockedOnAlertPath = false; // <--- NUEVO
 
                 if (savedWaypointIndex != -1)
                 {
@@ -244,8 +244,7 @@ public class MovmientoNPC : MonoBehaviour
                     savedWaypointIndex = -1;
                 }
 
-                // Solo vuelve a patrullar si NO ve al jugador
-                if (!IsPlayerInSight() && waypoints.Length > 0 && pathfinder != null)
+                if (waypoints.Length > 0 && pathfinder != null)
                 {
                     nextPathUpdateTime = Time.time + pathUpdateRate;
                     pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
@@ -374,7 +373,7 @@ public class MovmientoNPC : MonoBehaviour
 
     public void ReceiveAlert(Vector3 position)
     {
-        alertPosition = GetNearestWalkablePosition(position);
+        alertPosition = position;
         heardSound = true;
         savedWaypointIndex = currentWaypoint;
         Debug.Log("alerta de sonido");
@@ -382,7 +381,7 @@ public class MovmientoNPC : MonoBehaviour
         isWaiting = false;
         isFollowingPath = false;
         hasAlertedGroup = false;
-        mustFinishAlertPath = true;
+        isLockedOnAlertPath = true; // <--- NUEVO
         nextPathUpdateTime = Time.time + pathUpdateRate;
         pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
     }
@@ -404,40 +403,5 @@ public class MovmientoNPC : MonoBehaviour
                     Gizmos.DrawLine(currentPath[i - 1], currentPath[i]);
             }
         }
-    }
-
-    Vector3 GetNearestWalkablePosition(Vector3 target)
-    {
-        Node node = GridManager.Instance.NodeFromWorldPoint(target);
-        if (node.walkable)
-            return node.worldPosition;
-
-        // Busca en un radio pequeño alrededor
-        int searchRadius = 2;
-        Node nearest = null;
-        float minDist = float.MaxValue;
-        for (int x = -searchRadius; x <= searchRadius; x++)
-        {
-            for (int y = -searchRadius; y <= searchRadius; y++)
-            {
-                int checkX = node.gridX + x;
-                int checkY = node.gridY + y;
-                if (checkX >= 0 && checkX < GridManager.Instance.gridSizeX &&
-                    checkY >= 0 && checkY < GridManager.Instance.gridSizeY)
-                {
-                    Node checkNode = GridManager.Instance.grid[checkX, checkY];
-                    if (checkNode.walkable)
-                    {
-                        float dist = (checkNode.worldPosition - target).sqrMagnitude;
-                        if (dist < minDist)
-                        {
-                            minDist = dist;
-                            nearest = checkNode;
-                        }
-                    }
-                }
-            }
-        }
-        return nearest != null ? nearest.worldPosition : transform.position;
     }
 }

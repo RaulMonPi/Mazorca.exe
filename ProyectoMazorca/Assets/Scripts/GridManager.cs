@@ -23,7 +23,7 @@ public class GridManager : MonoBehaviour
     [Header("Debug")]
     public bool drawGizmos = true;
 
-    public Node[,] grid;
+    Node[,] grid;
     float nodeDiameter;
     public int gridSizeX { get; private set; } // Propiedad pública de solo lectura
     public int gridSizeY { get; private set; } // Propiedad pública de solo lectura
