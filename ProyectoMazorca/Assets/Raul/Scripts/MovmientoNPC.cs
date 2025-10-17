@@ -45,6 +45,7 @@ public class MovmientoNPC : MonoBehaviour
     public EnemyGroupManager groupManager;
 
     private float lastAlertTime = -10f; // Añade esto
+    private bool hasAlertedGroup = false;
 
     void Start()
     {
@@ -118,10 +119,11 @@ public class MovmientoNPC : MonoBehaviour
         }
 
         // ALERTA AL GRUPO cada 2 segundos como máximo
-        if (groupManager != null && Time.time - lastAlertTime > 2f)
+        if (groupManager != null && Time.time - lastAlertTime > 2f && !hasAlertedGroup)
         {
             groupManager.AlertGroup(player.position, this);
             lastAlertTime = Time.time;
+            hasAlertedGroup = true;
         }
 
         if (distanceToPlayer > chaseStopDistance && Time.time >= nextPathUpdateTime)
@@ -362,11 +364,10 @@ public class MovmientoNPC : MonoBehaviour
         heardSound = true;
         savedWaypointIndex = currentWaypoint;
         Debug.Log("alerta de sonido");
-        // Opcional: si quieres que el NPC interrumpa lo que está haciendo y vaya inmediatamente
         isAlertRotating = false;
         isWaiting = false;
         isFollowingPath = false;
-        // Pide el path hacia la posición de alerta
+        hasAlertedGroup = false; // Permite que este NPC pueda alertar si ve al jugador después
         nextPathUpdateTime = Time.time + pathUpdateRate;
         pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
     }
