@@ -56,21 +56,16 @@ public class MovmientoNPC : MonoBehaviour
         // Construye el árbol de decisión
         decisionTreeRoot =
             new DecisionConditionNode(
-                npc => npc.IsPlayerInSight(),
-                new DecisionActionNode(npc => {
-                    //Debug.Log("NPC: Persiguiendo jugador");
-                    npc.ChasingUpdate();
-                }),
+                npc => npc.isLockedOnAlertPath,
+                new DecisionActionNode(npc => npc.AlertUpdate()), // Solo hace alerta hasta terminar el path
                 new DecisionConditionNode(
-                    npc => npc.HasHeardSound(),
-                    new DecisionActionNode(npc => {
-                        //Debug.Log("NPC: Investigando sonido");
-                        npc.AlertUpdate();
-                    }),
-                    new DecisionActionNode(npc => {
-                        //Debug.Log("NPC: Patrullando");
-                        npc.PatrollingUpdate();
-                    })
+                    npc => npc.IsPlayerInSight(),
+                    new DecisionActionNode(npc => npc.ChasingUpdate()),
+                    new DecisionConditionNode(
+                        npc => npc.HasHeardSound(),
+                        new DecisionActionNode(npc => npc.AlertUpdate()),
+                        new DecisionActionNode(npc => npc.PatrollingUpdate())
+                    )
                 )
             );
     }
@@ -235,28 +230,25 @@ public class MovmientoNPC : MonoBehaviour
         {
             isFollowingPath = false;
 
-            // --- NUEVO BLOQUE: Si estaba investigando (alerta), vuelve a patrullar ---
+            // Si estaba investigando (alerta), vuelve a patrullar
             if (heardSound)
             {
                 heardSound = false;
                 isAlertRotating = false;
+                isLockedOnAlertPath = false; // <--- NUEVO
 
-                // Restaura el waypoint guardado si existe
                 if (savedWaypointIndex != -1)
                 {
                     currentWaypoint = savedWaypointIndex;
                     savedWaypointIndex = -1;
                 }
 
-                // Pide el path hacia el waypoint actual para retomar la patrulla
                 if (waypoints.Length > 0 && pathfinder != null)
                 {
                     nextPathUpdateTime = Time.time + pathUpdateRate;
                     pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
                 }
             }
-            // ------------------------------------------------------------------------
-
             return;
         }
 
