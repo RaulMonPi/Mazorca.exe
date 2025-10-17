@@ -141,7 +141,6 @@ public class MovmientoNPC : MonoBehaviour
         if (isAlertRotating) return;
 
         float distance = Vector3.Distance(transform.position, alertPosition);
-        Debug.Log(distance + " - " + reachDistance);
         // Si ya estoy en el destino, no busco ruta
         if (distance <= reachDistance)
         {
@@ -234,6 +233,29 @@ public class MovmientoNPC : MonoBehaviour
         if (currentPathIndex < 0 || currentPathIndex >= currentPath.Length)
         {
             isFollowingPath = false;
+
+            // --- NUEVO BLOQUE: Si estaba investigando (alerta), vuelve a patrullar ---
+            if (heardSound)
+            {
+                heardSound = false;
+                isAlertRotating = false;
+
+                // Restaura el waypoint guardado si existe
+                if (savedWaypointIndex != -1)
+                {
+                    currentWaypoint = savedWaypointIndex;
+                    savedWaypointIndex = -1;
+                }
+
+                // Pide el path hacia el waypoint actual para retomar la patrulla
+                if (waypoints.Length > 0 && pathfinder != null)
+                {
+                    nextPathUpdateTime = Time.time + pathUpdateRate;
+                    pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
+                }
+            }
+            // ------------------------------------------------------------------------
+
             return;
         }
 
@@ -248,7 +270,6 @@ public class MovmientoNPC : MonoBehaviour
 
         Vector3 direction = (targetWaypoint - transform.position).normalized;
 
-        // --- Elimina steering behaviour, solo usa Slerp ---
         if (direction != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(direction);
