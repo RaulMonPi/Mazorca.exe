@@ -17757,6 +17757,10 @@ PrefabInstance:
       propertyPath: m_Center.z
       value: 0.08142614
       objectReference: {fileID: 0}
+    - target: {fileID: 6490084120200311223, guid: 38551f64c6a9ad044b963373e2cc4e45, type: 3}
+      propertyPath: m_ProvidesContacts
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 551952414668875202, guid: 38551f64c6a9ad044b963373e2cc4e45, type: 3}
     m_RemovedGameObjects: []
@@ -21108,7 +21112,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
-      value: 1.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: pathUpdateRate
@@ -23077,7 +23081,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
-      value: 1.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: pathUpdateRate
