@@ -111,6 +111,13 @@ public class GridManager : MonoBehaviour
 
                 if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
                     neighbours.Add(grid[checkX, checkY]);
+
+                if (allowDiagonals && Mathf.Abs(dx) == 1 && Mathf.Abs(dy) == 1)
+                {
+                    Node n1 = grid[node.gridX + dx, node.gridY];
+                    Node n2 = grid[node.gridX, node.gridY + dy];
+                    if (!n1.walkable || !n2.walkable) continue; // Evita cortar esquinas
+                }
             }
         }
 

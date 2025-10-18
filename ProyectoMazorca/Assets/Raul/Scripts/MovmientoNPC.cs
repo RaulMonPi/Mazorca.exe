@@ -89,12 +89,6 @@ public class MovmientoNPC : MonoBehaviour
             pathfinder.StartFindPath(transform.position, target.position, OnPathFound);
         }
 
-        if (!isFollowingPath)
-        {
-            Vector3 directionToTarget = (target.position - transform.position).normalized;
-            transform.position += directionToTarget * patrolSpeed * Time.deltaTime;
-        }
-
         if (Vector3.Distance(transform.position, target.position) < reachDistance)
         {
             StartCoroutine(WaitAndLook());
@@ -155,6 +149,7 @@ public class MovmientoNPC : MonoBehaviour
 
         if (Time.time >= nextPathUpdateTime)
         {
+            //Debug.Log("Tiempo actualizar el path");
             nextPathUpdateTime = Time.time + pathUpdateRate;
             pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
         }
@@ -373,7 +368,7 @@ public class MovmientoNPC : MonoBehaviour
 
     public void ReceiveAlert(Vector3 position)
     {
-        alertPosition = position;
+        alertPosition = GetNearestWalkablePosition(position);
         heardSound = true;
         savedWaypointIndex = currentWaypoint;
         Debug.Log("alerta de sonido");
@@ -403,5 +398,44 @@ public class MovmientoNPC : MonoBehaviour
                     Gizmos.DrawLine(currentPath[i - 1], currentPath[i]);
             }
         }
+    }
+
+    Vector3 GetNearestWalkablePosition(Vector3 fromPosition)
+    {
+        Node startNode = GridManager.Instance.NodeFromWorldPoint(fromPosition);
+        if (startNode != null && startNode.walkable)
+            return startNode.worldPosition;
+
+        // Search in concentric rings in world space and use NodeFromWorldPoint to avoid accessing the internal grid array.
+        float maxSearchRadius = 5f; // max world units to search
+        float step = 0.5f; // sampling step in world units
+        Node nearest = null;
+        float minDist = float.MaxValue;
+
+        for (float radius = step; radius <= maxSearchRadius; radius += step)
+        {
+            int samples = Mathf.Max(8, Mathf.CeilToInt(2f * Mathf.PI * radius / step));
+            for (int i = 0; i < samples; i++)
+            {
+                float angle = (i / (float)samples) * Mathf.PI * 2f;
+                Vector3 samplePos = fromPosition + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+                Node checkNode = GridManager.Instance.NodeFromWorldPoint(samplePos);
+                if (checkNode != null && checkNode.walkable)
+                {
+                    float dist = (checkNode.worldPosition - fromPosition).sqrMagnitude;
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        nearest = checkNode;
+                    }
+                }
+            }
+
+            // if we found at least one walkable node at this radius, we can stop expanding further
+            if (nearest != null)
+                break;
+        }
+
+        return nearest != null ? nearest.worldPosition : fromPosition;
     }
 }

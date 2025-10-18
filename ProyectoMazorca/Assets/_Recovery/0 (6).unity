@@ -7128,7 +7128,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6308312567410384620, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 21.6
+      value: -1.95
       objectReference: {fileID: 0}
     - target: {fileID: 6308312567410384620, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7136,7 +7136,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6308312567410384620, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.47
+      value: 5.07
       objectReference: {fileID: 0}
     - target: {fileID: 6308312567410384620, guid: 74a22db9d3523384eb3b6dd52b7b9a3c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -16865,13 +16865,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
   gridWorldSize: {x: 77, y: 105}
-  nodeRadius: 0.5
+  nodeRadius: 0.79
   allowDiagonals: 1
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
   raycastHeight: 1
-  useBoxCheck: 1
+  useBoxCheck: 0
   drawGizmos: 1
 --- !u!1001 &1379646033
 PrefabInstance:
@@ -22611,7 +22611,7 @@ PrefabInstance:
       objectReference: {fileID: 835414901}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
-      value: 1.5
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: pathUpdateRate
