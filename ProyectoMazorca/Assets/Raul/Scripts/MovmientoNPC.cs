@@ -144,7 +144,8 @@ public class MovmientoNPC : MonoBehaviour
             {
                 // El árbol de decisión se encargará de cambiar a persecución
             }
-            else if (!isAlertRotating)
+            // SOLO inicia la rotación si no es alerta de grupo ya investigada
+            else if (!isAlertRotating && !(isAlertFromGroup && yaInvestigado))
             {
                 StartCoroutine(AlertRotateAndCheck());
             }
@@ -202,10 +203,14 @@ public class MovmientoNPC : MonoBehaviour
 
         heardSound = false;
         isAlertRotating = false;
-        yaInvestigado = true; // <--- aquí
+        yaInvestigado = true;
 
-        // Pide un nuevo path hacia el waypoint actual para retomar la patrulla solo si no es de grupo o no ha investigado
-        if (waypoints.Length > 0 && (!isAlertFromGroup || (isAlertFromGroup && !yaInvestigado)))
+        // Si es alerta de grupo y ya ha investigado, termina aquí
+        if (isAlertFromGroup && yaInvestigado)
+            yield break;
+
+        // Si no, sigue con la patrulla
+        if (waypoints.Length > 0)
         {
             pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
         }

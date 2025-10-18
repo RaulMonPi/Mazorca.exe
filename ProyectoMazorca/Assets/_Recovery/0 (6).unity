@@ -16865,7 +16865,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
   gridWorldSize: {x: 77, y: 105}
-  nodeRadius: 0.79
+  nodeRadius: 0.5
   allowDiagonals: 0
   obstacleMask:
     serializedVersion: 2
