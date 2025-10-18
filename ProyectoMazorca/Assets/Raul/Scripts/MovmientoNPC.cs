@@ -220,6 +220,47 @@ public class MovmientoNPC : MonoBehaviour
 
     void FollowPathUpdate()
     {
+        if (IsPlayerInSight())
+        {
+            // Ignora el path y mueve en recto al jugador
+            Vector3 dirToPlayer = (player.position - transform.position).normalized;
+            if (dirToPlayer != Vector3.zero)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(dirToPlayer);
+                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+            }
+            transform.position += dirToPlayer * chaseSpeed * Time.deltaTime;
+            // No actualices el path ni el índice
+            return;
+        }
+
+        Node node = GridManager.Instance.NodeFromWorldPoint(transform.position);
+        if (!node.walkable)
+        {
+            Debug.LogWarning($"{name}: NPC está en nodo no caminable, forzando salida.");
+            // Busca el nodo caminable más cercano y mueve al NPC ahí
+            Vector3 safePos = GetNearestWalkablePosition(transform.position);
+            transform.position = safePos;
+
+            isFollowingPath = false;
+            currentPath = null;
+
+            // Pide un path hacia el destino original (alertPosition si estaba en alerta, waypoint si patrullando)
+            if (heardSound || isLockedOnAlertPath)
+            {
+                if (pathfinder != null)
+                {
+                    nextPathUpdateTime = Time.time + pathUpdateRate;
+                    pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
+                }
+            }
+            else if (waypoints.Length > 0 && pathfinder != null)
+            {
+                nextPathUpdateTime = Time.time + pathUpdateRate;
+                pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
+            }
+            return;
+        }
         if (!isFollowingPath || currentPath == null) return;
 
         if (currentPathIndex < 0 || currentPathIndex >= currentPath.Length)

@@ -16866,7 +16866,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
   gridWorldSize: {x: 77, y: 105}
   nodeRadius: 0.79
-  allowDiagonals: 1
+  allowDiagonals: 0
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
@@ -20711,7 +20711,7 @@ PrefabInstance:
       objectReference: {fileID: 835414901}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
-      value: 1.5
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: pathUpdateRate
@@ -20723,7 +20723,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: chaseStopDistance
-      value: 0
+      value: 1.7
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: waypoints.Array.size
@@ -22623,7 +22623,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: chaseStopDistance
-      value: 0
+      value: 1.7
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: waypoints.Array.size
