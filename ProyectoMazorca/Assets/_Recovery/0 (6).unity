@@ -20711,7 +20711,7 @@ PrefabInstance:
       objectReference: {fileID: 835414901}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
-      value: 0.15
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: pathUpdateRate
@@ -22611,7 +22611,7 @@ PrefabInstance:
       objectReference: {fileID: 835414901}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: reachDistance
-      value: 0.15
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1145490870958840513, guid: 005ec15a5eed0d34aa371f71ace2eee6, type: 3}
       propertyPath: pathUpdateRate

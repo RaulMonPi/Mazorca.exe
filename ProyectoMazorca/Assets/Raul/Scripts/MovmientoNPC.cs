@@ -9,6 +9,7 @@ public class MovmientoNPC : MonoBehaviour
     public float chaseSpeed = 2f;
     public float alertSpeed = 1.2f;
     public float reachDistance = 1.5f;
+    public float nodeReachDistance = 0.15f;
     public float waitTime = 1f;
     public float lookAngle = 45f;
     public float lookDuration = 0.5f;
@@ -46,6 +47,9 @@ public class MovmientoNPC : MonoBehaviour
 
     private bool hasAlertedGroup = false; // Elimina lastAlertTime
     private bool isLockedOnAlertPath = false;
+    private bool isAlertFromGroup = false;
+
+    private bool yaInvestigado = false;
 
     void Start()
     {
@@ -183,20 +187,25 @@ public class MovmientoNPC : MonoBehaviour
         }
 
         // --- NUEVO: crea e inserta un waypoint justo antes del destino actual ---
-        GameObject noiseWaypoint = new GameObject("NoiseWaypoint");
-        noiseWaypoint.transform.position = transform.position;
-        var waypointsList = new List<Transform>(waypoints);
-        waypointsList.Insert(currentWaypoint, noiseWaypoint.transform);
-        waypoints = waypointsList.ToArray();
-        // Ajusta el índice para que el NPC vaya al nuevo waypoint
-        // (el nuevo waypoint está en currentWaypoint, así que no hay que sumar nada)
-        // ------------------------------------------------------
+        // --- SOLO crea el waypoint si la alerta NO viene del grupo ---
+        if (!isAlertFromGroup)
+        {
+            GameObject noiseWaypoint = new GameObject("NoiseWaypoint");
+            noiseWaypoint.transform.position = transform.position;
+            var waypointsList = new List<Transform>(waypoints);
+            waypointsList.Insert(currentWaypoint, noiseWaypoint.transform);
+            waypoints = waypointsList.ToArray();
+            // Ajusta el índice para que el NPC vaya al nuevo waypoint
+            // (el nuevo waypoint está en currentWaypoint, así que no hay que sumar nada)
+            // ------------------------------------------------------
+        }
 
         heardSound = false;
         isAlertRotating = false;
+        yaInvestigado = true; // <--- aquí
 
-        // Pide un nuevo path hacia el waypoint actual para retomar la patrulla
-        if (waypoints.Length > 0)
+        // Pide un nuevo path hacia el waypoint actual para retomar la patrulla solo si no es de grupo o no ha investigado
+        if (waypoints.Length > 0 && (!isAlertFromGroup || (isAlertFromGroup && !yaInvestigado)))
         {
             pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
         }
@@ -272,7 +281,7 @@ public class MovmientoNPC : MonoBehaviour
             {
                 heardSound = false;
                 isAlertRotating = false;
-                isLockedOnAlertPath = false; // <--- NUEVO
+                isLockedOnAlertPath = false;
 
                 if (savedWaypointIndex != -1)
                 {
@@ -280,8 +289,10 @@ public class MovmientoNPC : MonoBehaviour
                     savedWaypointIndex = -1;
                 }
 
+                // --- PARCHE: asegura que el índice es válido ---
                 if (waypoints.Length > 0 && pathfinder != null)
                 {
+                    currentWaypoint = Mathf.Clamp(currentWaypoint, 0, waypoints.Length - 1);
                     nextPathUpdateTime = Time.time + pathUpdateRate;
                     pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
                 }
@@ -308,7 +319,7 @@ public class MovmientoNPC : MonoBehaviour
 
         transform.position += direction * speed * Time.deltaTime;
 
-        if (Vector3.Distance(transform.position, targetWaypoint) < reachDistance)
+        if (Vector3.Distance(transform.position, targetWaypoint) < nodeReachDistance)
         {
             currentPathIndex++;
             if (currentPathIndex >= currentPath.Length)
@@ -403,7 +414,8 @@ public class MovmientoNPC : MonoBehaviour
         {
             alertPosition = other.transform.position;
             heardSound = true;
-            savedWaypointIndex = currentWaypoint; // Guarda el waypoint actual
+            savedWaypointIndex = currentWaypoint;
+            isAlertFromGroup = false; // <--- NUEVO
         }
     }
 
@@ -417,7 +429,9 @@ public class MovmientoNPC : MonoBehaviour
         isWaiting = false;
         isFollowingPath = false;
         hasAlertedGroup = false;
-        isLockedOnAlertPath = true; // <--- NUEVO
+        isLockedOnAlertPath = true;
+        isAlertFromGroup = true;
+        yaInvestigado = false; // <--- aquí
         nextPathUpdateTime = Time.time + pathUpdateRate;
         pathfinder.StartFindPath(transform.position, alertPosition, OnPathFound);
     }
