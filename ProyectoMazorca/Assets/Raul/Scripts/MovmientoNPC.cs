@@ -9,7 +9,7 @@ public class MovmientoNPC : MonoBehaviour
     public float chaseSpeed = 2f;
     public float alertSpeed = 1.2f;
     public float reachDistance = 1.5f;
-    public float nodeReachDistance = 0.15f;
+    public float nodeReachDistance = 0.3f;
     public float waitTime = 1f;
     public float lookAngle = 45f;
     public float lookDuration = 0.5f;
@@ -57,18 +57,29 @@ public class MovmientoNPC : MonoBehaviour
         if (pathfinder == null) pathfinder = gameObject.AddComponent<Pathfinding>();
         nextPathUpdateTime = Time.time;
 
-        // Construye el árbol de decisión
         decisionTreeRoot =
             new DecisionConditionNode(
                 npc => npc.isLockedOnAlertPath,
-                new DecisionActionNode(npc => npc.AlertUpdate()), // Solo hace alerta hasta terminar el path
+                new DecisionActionNode(npc => {
+                    Debug.Log($"{npc.name}: ALERTA (isLockedOnAlertPath)");
+                    npc.AlertUpdate();
+                }),
                 new DecisionConditionNode(
                     npc => npc.IsPlayerInSight(),
-                    new DecisionActionNode(npc => npc.ChasingUpdate()),
+                    new DecisionActionNode(npc => {
+                        Debug.Log($"{npc.name}: CHASING (IsPlayerInSight)");
+                        npc.ChasingUpdate();
+                    }),
                     new DecisionConditionNode(
                         npc => npc.HasHeardSound(),
-                        new DecisionActionNode(npc => npc.AlertUpdate()),
-                        new DecisionActionNode(npc => npc.PatrollingUpdate())
+                        new DecisionActionNode(npc => {
+                            Debug.Log($"{npc.name}: ALERTA (HasHeardSound)");
+                            npc.AlertUpdate();
+                        }),
+                        new DecisionActionNode(npc => {
+                            Debug.Log($"{npc.name}: PATRULLA");
+                            npc.PatrollingUpdate();
+                        })
                     )
                 )
             );
@@ -187,8 +198,6 @@ public class MovmientoNPC : MonoBehaviour
             savedWaypointIndex = -1;
         }
 
-        // --- NUEVO: crea e inserta un waypoint justo antes del destino actual ---
-        // --- SOLO crea el waypoint si la alerta NO viene del grupo ---
         if (!isAlertFromGroup)
         {
             GameObject noiseWaypoint = new GameObject("NoiseWaypoint");
@@ -196,22 +205,20 @@ public class MovmientoNPC : MonoBehaviour
             var waypointsList = new List<Transform>(waypoints);
             waypointsList.Insert(currentWaypoint, noiseWaypoint.transform);
             waypoints = waypointsList.ToArray();
-            // Ajusta el índice para que el NPC vaya al nuevo waypoint
-            // (el nuevo waypoint está en currentWaypoint, así que no hay que sumar nada)
-            // ------------------------------------------------------
         }
 
         heardSound = false;
         isAlertRotating = false;
         yaInvestigado = true;
+        // Elimina el path actual y vuelve a patrullar al waypoint actual
+        isFollowingPath = false;
+        currentPath = null;
+        isLockedOnAlertPath = false;
 
-        // Si es alerta de grupo y ya ha investigado, termina aquí
-        if (isAlertFromGroup && yaInvestigado)
-            yield break;
-
-        // Si no, sigue con la patrulla
         if (waypoints.Length > 0)
         {
+            Debug.Log("a patrullar");
+            currentWaypoint = Mathf.Clamp(currentWaypoint, 0, waypoints.Length - 1);
             pathfinder.StartFindPath(transform.position, waypoints[currentWaypoint].position, OnPathFound);
         }
     }
@@ -223,6 +230,9 @@ public class MovmientoNPC : MonoBehaviour
             currentPath = newPath;
             currentPathIndex = 0;
             isFollowingPath = true;
+            Debug.Log("a patrullar 2" + gameObject.name);
+            Debug.Log(currentPath.Length);
+            Debug.Log(currentWaypoint);
         }
         else
         {
