@@ -1105,9 +1105,15 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
+<<<<<<< HEAD
     m_Target: {x: -7.3099065, y: -15.75545, z: 22.880074}
     speed: 2
     m_Value: {x: -5.6960106, y: -8.116768, z: 15.372176}
+=======
+    m_Target: {x: 2.8423653, y: 11.2517605, z: 6.5927534}
+    speed: 2
+    m_Value: {x: -2.1833665, y: 5.29015, z: 0.3959885}
+>>>>>>> parent of c85f3a6 (sdadsa)
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1153,6 +1159,7 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
+<<<<<<< HEAD
     m_Target: {x: 0.3820236, y: -0.30899984, z: 0.13779487, w: 0.8599953}
     speed: 2
     m_Value: {x: -0.46257877, y: -0.008746829, z: 0.00463405, w: -0.8865692}
@@ -1160,6 +1167,15 @@ MonoBehaviour:
     m_Target: 22.94629
     speed: 2
     m_Value: 15.191424
+=======
+    m_Target: {x: -0.4612498, y: 0.008544454, z: -0.004380072, w: -0.88725805}
+    speed: 2
+    m_Value: {x: -0.33008203, y: -0.051772304, z: 0.018183881, w: -0.9423894}
+  m_Size:
+    m_Target: 12.148079
+    speed: 2
+    m_Value: 0.31874484
+>>>>>>> parent of c85f3a6 (sdadsa)
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1348,7 +1364,11 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 79}
     m_SelectedIDs: 74f60000
     m_LastClickedID: 63092
+<<<<<<< HEAD
     m_ExpandedIDs: 00000000c0c20000
+=======
+    m_ExpandedIDs: 000000003ef70000
+>>>>>>> parent of c85f3a6 (sdadsa)
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1377,7 +1397,11 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
+<<<<<<< HEAD
     m_ExpandedIDs: 00000000c0c20000
+=======
+    m_ExpandedIDs: 000000003ef70000
+>>>>>>> parent of c85f3a6 (sdadsa)
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 

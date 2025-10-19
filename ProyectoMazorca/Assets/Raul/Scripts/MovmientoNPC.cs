@@ -180,17 +180,6 @@ public class MovmientoNPC : MonoBehaviour
             currentWaypoint = savedWaypointIndex;
             savedWaypointIndex = -1;
         }
-
-        // --- NUEVO: crea e inserta un waypoint justo antes del destino actual ---
-        GameObject noiseWaypoint = new GameObject("NoiseWaypoint");
-        noiseWaypoint.transform.position = transform.position;
-        var waypointsList = new List<Transform>(waypoints);
-        waypointsList.Insert(currentWaypoint, noiseWaypoint.transform);
-        waypoints = waypointsList.ToArray();
-        // Ajusta el índice para que el NPC vaya al nuevo waypoint
-        // (el nuevo waypoint está en currentWaypoint, así que no hay que sumar nada)
-        // ------------------------------------------------------
-
         heardSound = false;
         isAlertRotating = false;
 
@@ -229,6 +218,7 @@ public class MovmientoNPC : MonoBehaviour
         Vector3 targetWaypoint = currentPath[currentPathIndex];
         targetWaypoint.y = transform.position.y;
 
+        // Decide velocidad según contexto
         float speed = patrolSpeed;
         if (IsPlayerInSight())
             speed = chaseSpeed;
@@ -237,7 +227,6 @@ public class MovmientoNPC : MonoBehaviour
 
         Vector3 direction = (targetWaypoint - transform.position).normalized;
 
-        // --- Elimina steering behaviour, solo usa Slerp ---
         if (direction != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(direction);
@@ -285,23 +274,6 @@ public class MovmientoNPC : MonoBehaviour
             }
 
             currentWaypoint = Mathf.Clamp(currentWaypoint, 0, waypoints.Length - 1);
-        }
-
-        // ---- pide el path inmediatamente y orienta al objetivo ----
-        if (waypoints.Length > 0)
-        {
-            Vector3 targetPos = waypoints[currentWaypoint].position;
-            Vector3 flatDir = targetPos - transform.position;
-            flatDir.y = 0f;
-            // Elimina steering, solo orienta instantáneamente si quieres:
-            if (flatDir.sqrMagnitude > 0.0001f)
-                transform.rotation = Quaternion.LookRotation(flatDir.normalized);
-
-            if (pathfinder != null)
-            {
-                nextPathUpdateTime = Time.time + pathUpdateRate;
-                pathfinder.StartFindPath(transform.position, targetPos, OnPathFound);
-            }
         }
 
         isWaiting = false;
