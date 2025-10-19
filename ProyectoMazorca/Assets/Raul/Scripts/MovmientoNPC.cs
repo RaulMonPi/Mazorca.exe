@@ -194,6 +194,7 @@ public class MovmientoNPC : MonoBehaviour
         // Al terminar la rotación, vuelve a patrullar desde el waypoint guardado
         if (savedWaypointIndex != -1)
         {
+            Debug.Log(savedWaypointIndex);
             currentWaypoint = savedWaypointIndex;
             savedWaypointIndex = -1;
         }
@@ -213,7 +214,7 @@ public class MovmientoNPC : MonoBehaviour
         // Elimina el path actual y vuelve a patrullar al waypoint actual
         isFollowingPath = false;
         currentPath = null;
-        isLockedOnAlertPath = false;
+        //isLockedOnAlertPath = false; SI ACTIVO ESTO PETA
 
         if (waypoints.Length > 0)
         {
