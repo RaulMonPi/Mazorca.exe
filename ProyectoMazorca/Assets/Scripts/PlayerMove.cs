@@ -7,13 +7,16 @@ public class PlayerMove : MonoBehaviour
     public float runSpeed = 9f;
     public float rotationSpeed = 10f;
 
+    public Animator animator;
+
     private Rigidbody rb;
     private Vector3 moveDirection;
+
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-
+        
         if (rb != null)
             rb.freezeRotation = true;
     }
@@ -25,6 +28,12 @@ public class PlayerMove : MonoBehaviour
         float vertical = Input.GetAxisRaw("Vertical");
 
         moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (animator != null)
+        {
+            bool isWalking = moveDirection.magnitude > 0.1f;
+            animator.SetBool("walking", isWalking);
+        }
 
         // Rotar si hay movimiento
         if (moveDirection.magnitude > 0.1f)

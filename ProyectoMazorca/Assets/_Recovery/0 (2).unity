@@ -16040,9 +16040,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVida
   vida: 3
   tiempoInvulnerable: 1
-  animator: {fileID: 0}
-  damageMarkPrefab: {fileID: 0}
-  alturaSobreSuelo: 0
 --- !u!1 &1309769177 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2922107562325671188, guid: 55320ad6284175349b1008aaf7238c7a, type: 3}
@@ -16143,14 +16140,6 @@ PrefabInstance:
     - target: {fileID: 2219292830553907877, guid: 6a4317fc729846d79f69cda980e03f9d, type: 3}
       propertyPath: m_Name
       value: ChestMonsterPBRDefault
-      objectReference: {fileID: 0}
-    - target: {fileID: 4729036395327251521, guid: 6a4317fc729846d79f69cda980e03f9d, type: 3}
-      propertyPath: chaseSpeed
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 4729036395327251521, guid: 6a4317fc729846d79f69cda980e03f9d, type: 3}
-      propertyPath: patrolSpeed
-      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4729036395327251521, guid: 6a4317fc729846d79f69cda980e03f9d, type: 3}
       propertyPath: 'waypoints.Array.data[0]'

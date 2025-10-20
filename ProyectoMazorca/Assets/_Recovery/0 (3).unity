@@ -16145,14 +16145,6 @@ PrefabInstance:
       value: ChestMonsterPBRDefault
       objectReference: {fileID: 0}
     - target: {fileID: 4729036395327251521, guid: 6a4317fc729846d79f69cda980e03f9d, type: 3}
-      propertyPath: chaseSpeed
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 4729036395327251521, guid: 6a4317fc729846d79f69cda980e03f9d, type: 3}
-      propertyPath: patrolSpeed
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 4729036395327251521, guid: 6a4317fc729846d79f69cda980e03f9d, type: 3}
       propertyPath: 'waypoints.Array.data[0]'
       value: 
       objectReference: {fileID: 1933558225}
