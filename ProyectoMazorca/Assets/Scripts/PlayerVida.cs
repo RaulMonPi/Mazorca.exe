@@ -7,7 +7,11 @@ public class PlayerVida : MonoBehaviour
     [Header("Vidas")]
     public int vida = 3;
     public float tiempoInvulnerable = 1.0f; // segundos de invulnerabilidad tras recibir daño
+    public float duracionHitStop = 0.5f;
+
     private float tiempoUltimoDanio = -Mathf.Infinity;
+    public Animator animator;
+    private bool isHitStop = false;
 
     [Header("HUD")]
     public GameObject[] corazones;      // Imágenes o modelos de corazones
@@ -69,5 +73,21 @@ public class PlayerVida : MonoBehaviour
             SceneManager.LoadScene(indexAnterior);
         else
             Debug.LogWarning("No hay escena anterior en el Build Settings.");
+    }
+
+    private IEnumerator HitStopCoroutine()
+    {
+
+
+        isHitStop = true;
+        float originalTimeScale = Time.timeScale;
+
+        Time.timeScale = 0f;
+
+        //Esperamos en tiempo real
+        yield return new WaitForSecondsRealtime(duracionHitStop);
+
+        Time.timeScale = originalTimeScale;
+        isHitStop = false;
     }
 }
