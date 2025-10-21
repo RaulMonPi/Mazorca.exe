@@ -44,6 +44,3 @@ sysinfo.txt
 *.apk
 *.aab
 *.unitypackage
-
-# Unity user settings (layouts, preferences, etc.)
-UserSettings/
