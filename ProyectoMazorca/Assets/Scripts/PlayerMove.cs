@@ -10,6 +10,8 @@ public class PlayerMove : MonoBehaviour
     private Rigidbody rb;
     private Vector3 moveDirection;
 
+    public Animator animator;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -26,8 +28,19 @@ public class PlayerMove : MonoBehaviour
 
         moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
+        //Animacion de andar o idle
+        bool isWalking = moveDirection.magnitude > 0.1f;
+        bool isRunning = isWalking && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
+
+
+        if (animator != null)
+        {
+            animator.SetBool("isWalking", isWalking);
+            animator.SetBool("isRunning", isRunning);
+        }
+
         // Rotar si hay movimiento
-        if (moveDirection.magnitude > 0.1f)
+        if (isWalking)
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
